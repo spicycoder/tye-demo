@@ -1,32 +1,68 @@
 ---
 marp: true
-theme: gaia
 ---
 
-# Project Tye
+# Dapr
 
-## Install Tye
+> Make sure Docker desktop is installed & k8s is running
 
-> Requires .NET Core 3.1 SDK
+## Install Dapr
 
-> Check [nuget](dotnet tool install --global Microsoft.Tye --version 0.10.0-alpha.21420.1) for latest version
+> Check [nuget](https://www.nuget.org/packages/Dapr.AspNetCore/) for latest version
 
 ```ps1
-dotnet tool install -g Microsoft.Tye --version "0.10.0-alpha.21420.1"
+dotnet add package Dapr.AspNetCore --version 1.5.0
 ```
 
 ---
 
-## Add nuget package
+# Components
 
-> Check [nuget](https://www.nuget.org/packages/Microsoft.Tye.Extensions.Configuration) for latest version
+Create yaml files for each components
 
-```ps1
-dotnet add package Microsoft.Tye.Extensions.Configuration --version 0.10.0-alpha.21420.1
+> Create a directory `components` at root level of the repository
+
+---
+
+## State Store
+
+> Create a file `statestore.yaml` with following contents
+
+```yaml
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      value: localhost:6379
+    - name: redisPassword
+      value: ""
+    - name: actorStateStore
+      value: "true"
 ```
 
-## Initialize
+---
 
-```ps1
-tye init
+## Secrets
+
+> Create a file `localSecretStore.yaml` with following contents
+
+```yaml
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: localsecretstore
+  namespace: default
+spec:
+  type: secretstores.local.file
+  version: v1
+  metadata:
+    - name: secretsFile
+      value: ./SuperHeroes/secrets.json #path to secrets file
+    - name: nestedSeparator
+      value: ":"
 ```

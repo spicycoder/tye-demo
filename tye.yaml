@@ -1,0 +1,10 @@
+name: superheroes
+extensions:
+  - name: dapr
+    log-level: debug
+    components: "./components/"
+services:
+  - name: heroesapi
+    project: HeroesApi/HeroesApi.csproj
+  - name: contactsapi
+    project: ContactsApi/ContactsApi.csproj
