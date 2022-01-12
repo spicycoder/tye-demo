@@ -1,15 +1,21 @@
-﻿using HeroesApi.Clients;
+﻿using Dapr.Client;
+using HeroesApi.Clients;
 using Shared;
+using Shared.Standards;
 
 namespace HeroesApi.Services;
 
 public class HeroesService
 {
     private readonly ContactsClient _contactsClient;
+    private readonly DaprClient _daprClient;
 
-    public HeroesService(ContactsClient contactsClient)
+    public HeroesService(
+        ContactsClient contactsClient,
+        DaprClient daprClient)
     {
         _contactsClient = contactsClient;
+        _daprClient = daprClient;
     }
 
     public Hero[] Heroes { get; } = new[]
@@ -17,33 +23,38 @@ public class HeroesService
         new Hero
         {
             Id = "Spiderman",
-            Name = "Peter Parker",
             Universe = "Marvel"
         },
         new Hero
         {
             Id = "Batman",
-            Name = "Bruce Wayne",
             Universe = "DC"
         },
         new Hero
         {
             Id = "Ironman",
-            Name = "Tony Stark",
             Universe = "Marvel"
         },
         new Hero
         {
             Id = "Superman",
-            Name = "Clark Kent",
             Universe = "DC"
         }
     };
 
     public async Task<Hero?> FindHero(string id)
     {
-        var hero = Heroes.FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.CurrentCultureIgnoreCase));
-        hero!.Contact = await _contactsClient.GetContactAsync(hero.Name);
+        var identity = id.ToLower();
+
+        var hero = Heroes.FirstOrDefault(x => string.Equals(x.Id, identity, StringComparison.CurrentCultureIgnoreCase));
+        var heroes = await _daprClient.GetSecretAsync(Constants.SecretStore, identity);
+
+        if (heroes.ContainsKey(identity))
+        {
+            hero!.Name = heroes[identity];
+            hero!.Contact = await _contactsClient.GetContactAsync(hero.Name);
+        }
+        
         return hero;
     }
 }

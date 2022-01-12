@@ -2,7 +2,7 @@ name: superheroes
 extensions:
   - name: dapr
     log-level: debug
-    components: "./components/"
+    components-path: "./components/"
 services:
   - name: heroesapi
     project: HeroesApi/HeroesApi.csproj
